@@ -1,0 +1,27 @@
+﻿<Properties StartupConfiguration="{75E9C212-870E-494D-827D-1984EE3BFD3B}|Default">
+  <MonoDevelop.Ide.Workbench ActiveDocument="SampleLoggingApp/Aws/SampleAthenaClient.cs">
+    <Files>
+      <File FileName="SampleLoggingApp/Aws/SampleAthenaClient.cs" Line="81" Column="83" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="SampleLoggingApp" expanded="True">
+            <Node name="SampleLoggingApp" expanded="True">
+              <Node name="Aws" expanded="True">
+                <Node name="SampleAthenaClient.cs" selected="True" />
+              </Node>
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MultiItemStartupConfigurations />
+  <MonoDevelop.Ide.ItemProperties.SampleLoggingApp PreferredExecutionTarget="MonoDevelop.Default" />
+</Properties>

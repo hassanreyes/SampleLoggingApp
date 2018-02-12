@@ -1,19 +1,18 @@
 ﻿<Properties StartupConfiguration="{75E9C212-870E-494D-827D-1984EE3BFD3B}|Default">
-  <MonoDevelop.Ide.Workbench ActiveDocument="SampleLoggingApp/appsettings.json">
+  <MonoDevelop.Ide.Workbench ActiveDocument="SampleLoggingApp Status">
     <Files>
       <File FileName="SampleLoggingApp/Aws/SampleAthenaClient.cs" Line="125" Column="18" />
       <File FileName="SampleLoggingApp/Model/SampleData.cs" Line="12" Column="197" />
       <File FileName="SampleLoggingApp/Model/LogEntry.cs" Line="18" Column="40" />
-      <File FileName="SampleLoggingApp/appsettings.json" Line="5" Column="50" />
+      <File FileName="SampleLoggingApp/appsettings.json" Line="8" Column="31" />
+      <File FileName="SampleLoggingApp Status" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State name="__root__">
-          <Node name="SampleLoggingApp" expanded="True">
+          <Node name="SampleLoggingApp" expanded="True" selected="True">
             <Node name="SampleLoggingApp" expanded="True">
-              <Node name="Aws" expanded="True" />
-              <Node name="Model" expanded="True" />
-              <Node name="appsettings.json" selected="True" />
+              <Node name="Dependencies" expanded="True" />
             </Node>
           </Node>
         </State>

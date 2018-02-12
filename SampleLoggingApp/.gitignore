@@ -1,0 +1,14 @@
+.vscode
+[Bb]in/
+.vscode/
+[Oo]bj/
+
+.userprefs
+appsettings.Development.json
+appsettings.json
+
+*.suo
+*.user
+github
+github.pub
+

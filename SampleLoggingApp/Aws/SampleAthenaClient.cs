@@ -118,11 +118,11 @@ namespace SampleLoggingApp
 
             while(true)
             {
-                //while (!getQueryResultsResult.IsCompleted)
-                //{
-                //    Thread.Sleep(100);
-                //    Console.Write(".");
-                //}
+                while (!getQueryResultsResult.IsCompleted)
+                {
+                    Thread.Sleep(100);
+                    Console.Write(".");
+                }
 
                 if (getQueryResultsResult.Exception != null)
                 {

@@ -1,16 +1,19 @@
 ﻿<Properties StartupConfiguration="{75E9C212-870E-494D-827D-1984EE3BFD3B}|Default">
-  <MonoDevelop.Ide.Workbench ActiveDocument="SampleLoggingApp/Aws/SampleAthenaClient.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="SampleLoggingApp/appsettings.json">
     <Files>
-      <File FileName="SampleLoggingApp/Aws/SampleAthenaClient.cs" Line="81" Column="83" />
+      <File FileName="SampleLoggingApp/Aws/SampleAthenaClient.cs" Line="125" Column="18" />
+      <File FileName="SampleLoggingApp/Model/SampleData.cs" Line="12" Column="197" />
+      <File FileName="SampleLoggingApp/Model/LogEntry.cs" Line="18" Column="40" />
+      <File FileName="SampleLoggingApp/appsettings.json" Line="5" Column="50" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State name="__root__">
           <Node name="SampleLoggingApp" expanded="True">
             <Node name="SampleLoggingApp" expanded="True">
-              <Node name="Aws" expanded="True">
-                <Node name="SampleAthenaClient.cs" selected="True" />
-              </Node>
+              <Node name="Aws" expanded="True" />
+              <Node name="Model" expanded="True" />
+              <Node name="appsettings.json" selected="True" />
             </Node>
           </Node>
         </State>
@@ -21,7 +24,9 @@
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
-  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches>
+    <Watch file="SampleLoggingApp/Aws/SampleAthenaClient.cs" line="143" offsetX="648" offsetY="2130" expression="totalRows" liveUpdate="False" />
+  </MonoDevelop.Ide.DebuggingService.PinnedWatches>
   <MultiItemStartupConfigurations />
   <MonoDevelop.Ide.ItemProperties.SampleLoggingApp PreferredExecutionTarget="MonoDevelop.Default" />
 </Properties>

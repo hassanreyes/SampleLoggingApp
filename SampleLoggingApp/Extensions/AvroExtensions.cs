@@ -26,9 +26,10 @@ namespace SampleLoggingApp.Extensions
                 {
                     for (int i = 0; i < numOfFiles; i++)
                     {
+                        DateTime randDateTime = SampleData.RandDate();
                         var testData = new List<LogEntry>();
 
-                        testData.AddRange(SampleData.GetBunchOfData(numOfRecords));
+                        testData.AddRange(SampleData.GetBunchOfData(numOfRecords, randDateTime));
 
                         using (MemoryStream buffer = new MemoryStream())
                         {
@@ -41,7 +42,7 @@ namespace SampleLoggingApp.Extensions
                             }
 
                             //Objects are push sync. to keep the order.
-                            client.PutObject(buffer);
+                            client.PutObject(buffer, randDateTime);
                         }
 
                         SampleContext.ClearConsoleLine();

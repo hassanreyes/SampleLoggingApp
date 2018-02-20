@@ -22,4 +22,11 @@ namespace SampleLoggingApp.Model
         Trace = 6
     }
 
+    public enum ContextOperation
+    {
+        PushS3,
+        QueryAthena,
+        PushES,
+        QueryES
+    }
 }

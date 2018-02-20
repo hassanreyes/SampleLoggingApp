@@ -22,14 +22,15 @@ namespace SampleLoggingApp
             _s3Client = new AmazonS3Client(endpoint);
         }
 
-        public void PutObject(Stream buffer)
+        public void PutObject(Stream buffer, DateTime dt)
         {
+            var partitionPath = String.Format("year={0:yyyy}/month={0:MM}/day={0:dd}", dt);
             var putRequest = new PutObjectRequest()
             {
                 BucketName = this.BucketName,
                 /*ContentType = "application/octet-stream"*/
                 InputStream = buffer,
-                Key = $"{this.BucketPath}{Format}/{Guid.NewGuid().ToString()}.{Format}"
+                Key = $"{this.BucketPath}{Format}/{partitionPath}/{Guid.NewGuid().ToString()}.{Format}",
             };
 
             var putResponse = _s3Client.PutObjectAsync(putRequest);

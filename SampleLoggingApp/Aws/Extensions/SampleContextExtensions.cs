@@ -13,6 +13,7 @@ namespace SampleLoggingApp.Aws.Extensions
             context.S3BucketPath = config["BucketPath"];
             context.AthenaDataBase = config["AthenaDataBase"];
             context.AthenaS3BucketOutputPath = config["AthenaS3BucketOutputPath"];
+            context.ElasticsearchEndpoint = config["ElasticsearchEndpoint"];
 
             return context;
         }

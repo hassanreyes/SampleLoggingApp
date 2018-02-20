@@ -1,9 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace SampleLoggingApp.Model
 {
-    [DataContract(Name = "LogEntry", Namespace = "Logging")]
+    [DataContract(Name = "InnerData", Namespace = "SampleLoggingApp.Model")]
+    public class InnerData
+    {
+        public string IpAddress { get; set; }
+        public string Message { get; set; }
+    }
+
+    [DataContract(Name = "LogEntry", Namespace = "SampleLoggingApp.Model")]
     public class LogEntry
     {
         [DataMember(Name = "Timestamp")]
@@ -14,8 +22,14 @@ namespace SampleLoggingApp.Model
         public string Source { get; set; }
         [DataMember(Name = "Message")]
         public string Message { get; set; }
-        [DataMember(Name = "Tag")]
-        public string Tag { get; set; }
+        [DataMember(Name = "Tags")]
+        public IEnumerable<string> Tags { get; set; }
+        [DataMember(Name = "InnerData")]
+        public InnerData InnerData { get; set; }
 
+        public override string ToString()
+        {
+            return string.Format("[LogEntry: Timestamp={0}, Priority={1}, Source={2}, Message={3}, Tags={4}]", Timestamp, Priority, Source, Message, Tags);
+        }
     }
 }

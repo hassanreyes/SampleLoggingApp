@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.Athena.Model;
+using static SampleLoggingApp.Model.Statistics;
 
 namespace SampleLoggingApp
 {
@@ -21,9 +22,9 @@ namespace SampleLoggingApp
             this.OutputLocation = outputLocation;
         }
 
-        public string ExecuteQuery(string query)
+        public string ExecuteQuery(string query, ref QueryStageStatistics queryStats)
         {
-            TimeSpan queryExecTime, recordsReturnTime;
+            #region Setup
 
             QueryExecutionContext queryExecContext = new QueryExecutionContext()
             {
@@ -42,6 +43,8 @@ namespace SampleLoggingApp
                 ResultConfiguration = resultConfig
             };
 
+            #endregion
+
             var watch = new Stopwatch();
 
             #region Query Execution
@@ -54,7 +57,7 @@ namespace SampleLoggingApp
             while(!startQueryExecResult.IsCompleted)
             {
                 Thread.Sleep(100);
-                Console.Write(":");
+                Console.Write($"\r START {watch.Elapsed}");
             }
 
             if (startQueryExecResult.Exception != null)
@@ -72,6 +75,7 @@ namespace SampleLoggingApp
             { 
                 QueryExecutionId = startQueryExecResult.Result.QueryExecutionId 
             };
+
             Task<Amazon.Athena.Model.GetQueryExecutionResponse> getQueryExecResult = null;
 
             bool isQueryRunning = true;
@@ -91,14 +95,17 @@ namespace SampleLoggingApp
                 else if(state == Amazon.Athena.QueryExecutionState.SUCCEEDED)
                 {
                     isQueryRunning = false;
-                    queryExecTime = watch.Elapsed;
+                    queryStats.QueryExecutionTime = watch.Elapsed;
                 }
                 else
                 {
                     Thread.Sleep(100);
-                    Console.Write(":");
+                    Console.Write($"\r EXEC  {watch.Elapsed}");
                 }
             }
+
+            queryStats.EngineExecutionTimeInMillis = getQueryExecResult.Result.QueryExecution.Statistics.EngineExecutionTimeInMillis;
+            queryStats.DataScannedInBytes = getQueryExecResult.Result.QueryExecution.Statistics.DataScannedInBytes;
 
             #endregion
 
@@ -121,7 +128,7 @@ namespace SampleLoggingApp
                 while (!getQueryResultsResult.IsCompleted)
                 {
                     Thread.Sleep(100);
-                    Console.Write(".");
+                    Console.Write($"\r FETCH {watch.Elapsed}");
                 }
 
                 if (getQueryResultsResult.Exception != null)
@@ -134,18 +141,19 @@ namespace SampleLoggingApp
                     return "- Canceled -";
                 }
 
-                while(getQueryResultsResult.Status == System.Threading.Tasks.TaskStatus.Running)
-                {
-                    Thread.Sleep(100);
-                    Console.Write(".");
-                }
+                //while(getQueryResultsResult.Status == System.Threading.Tasks.TaskStatus.Running)
+                //{
+                //    Thread.Sleep(100);
+                //    Console.Write(".");
+                //}
 
                 totalRows += getQueryResultsResult.Result.ResultSet.Rows.Count;
 
-                if(getQueryResultsResult.Result.NextToken == null)
+                if(getQueryResultsResult.Result.NextToken == null || totalRows >= SampleContext.MAX_FETCHED_RECORDS)
                 {
-                    recordsReturnTime = watch.Elapsed;
+                    queryStats.DataFetchingTime = watch.Elapsed;
                     contentSize += getQueryResultsResult.Result.ContentLength;
+
                     break;
                 }
 
@@ -159,8 +167,7 @@ namespace SampleLoggingApp
 
             #endregion
 
-            return $"{totalRows} Rows with a total of {contentSize/1024f} KB " + 
-                "took {queryExecTime} executing query and {recordsReturnTime} returning records.";
+            return $"{contentSize} bytes took {queryStats.QueryExecutionTime} executing query and {queryStats.DataFetchingTime} fetching first {SampleContext.MAX_FETCHED_RECORDS} records.";
         }
 
         #region IDisposable Support

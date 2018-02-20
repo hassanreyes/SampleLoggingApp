@@ -2,11 +2,15 @@
 using System.Collections.Generic;
 using Amazon.S3;
 using SampleLoggingApp.Model;
+using static SampleLoggingApp.Model.Statistics;
 
 namespace SampleLoggingApp
 {
     public class SampleContext
     {
+        public const int MAX_QUERY_REPETITIONS = 10;
+        public const int MAX_FETCHED_RECORDS = 10000;
+
         Statistics _stats = new Statistics();
 
         public Amazon.RegionEndpoint RegionEndpoint { get; set; }
@@ -17,65 +21,125 @@ namespace SampleLoggingApp
         public string AthenaDataBase { get; set; }
         public string AthenaS3BucketOutputPath { get; set; }
         public ICollection<string> Queries { get; set; }
-        public bool IsPushToS3Bucket { get; set; }
-        public bool IsQueryAthena { get; set; }
+        public ContextOperation ContextOperation { get; set; }
         public Action<int,int> PushToS3Bucket { get; set; }
+        public string ElasticsearchEndpoint { get; set; }
 
         public void Run()
         {
-            //If given, Run Action that push logs to S3
-            if(IsPushToS3Bucket && PushToS3Bucket != null)
+            SampleElasticsearchClient esClient;
+            string report;
+            int repetitions;
+
+            switch (ContextOperation)
             {
-                if (CaptureParams(out int numOfFiles, out int numOfRecords))
-                {
-                    Console.WriteLine($"Sample {Format}-log to S3://{S3BucketName}/{S3BucketPath}");
-
-                    try
+                case ContextOperation.PushS3:
+                    //If given, Run Action that push logs to S3
+                    if (PushToS3Bucket != null)
                     {
-                        _stats.StartStage("File Upload", $"Uploading {numOfFiles} files with {numOfRecords * 10} records each file");
-
-                        PushToS3Bucket(numOfFiles, numOfRecords);
-
-                        _stats.StopCurrentStage();
-                    }
-                    catch (AmazonS3Exception amazonS3Exception)
-                    {
-                        if (amazonS3Exception.ErrorCode != null &&
-                            (amazonS3Exception.ErrorCode.Equals("InvalidAccessKeyId")
-                            ||
-                            amazonS3Exception.ErrorCode.Equals("InvalidSecurity")))
+                        if (CaptureS3Params(out int numOfFiles, out int numOfRecords))
                         {
-                            Console.WriteLine("Check the provided AWS Credentials.");
-                            Console.WriteLine(
-                                "For service sign up go to http://aws.amazon.com/s3");
-                        }
-                        else
-                        {
-                            Console.WriteLine(
-                                "Error occurred. Message:'{0}' when writing an object"
-                                , amazonS3Exception.Message);
+                            Console.WriteLine($"Sample {Format}-log to S3://{S3BucketName}/{S3BucketPath}");
+
+                            try
+                            {
+                                _stats.StartStage("File Upload", $"Uploading {numOfFiles} files with {numOfRecords * 10} records each file");
+
+                                PushToS3Bucket(numOfFiles, numOfRecords);
+
+                                _stats.StopCurrentStage();
+                            }
+                            catch (AmazonS3Exception amazonS3Exception)
+                            {
+                                if (amazonS3Exception.ErrorCode != null &&
+                                    (amazonS3Exception.ErrorCode.Equals("InvalidAccessKeyId")
+                                    ||
+                                    amazonS3Exception.ErrorCode.Equals("InvalidSecurity")))
+                                {
+                                    Console.WriteLine("Check the provided AWS Credentials.");
+                                    Console.WriteLine(
+                                        "For service sign up go to http://aws.amazon.com/s3");
+                                }
+                                else
+                                {
+                                    Console.WriteLine(
+                                        "Error occurred. Message:'{0}' when writing an object"
+                                        , amazonS3Exception.Message);
+                                }
+                            }
                         }
                     }
-                }
-            }
-
-            //Run given queries.
-            if(IsQueryAthena && Queries != null && Queries.Count > 0)
-            {
-                Console.WriteLine($"Sample {Format}-log querying from {AthenaDataBase} Athena's Database");
-
-                using (SampleAthenaClient athenaClient = new SampleAthenaClient("hassan", "s3://dj-rnc-feeds/hassan-log-sample/athena_output/", Amazon.RegionEndpoint.USEast1))
-                {
-                    foreach(string query in Queries)
+                    break;
+                case ContextOperation.QueryAthena:
+                    //Run given queries.
+                    if (Queries != null && Queries.Count > 0)
                     {
-                        _stats.StartStage("Querying", query);
+                        Console.WriteLine($"Sample {Format}-log querying from {AthenaDataBase} Athena's Database");
 
-                        var report = athenaClient.ExecuteQuery(query);
+                        while (!CaptureQueryParams(out repetitions))
+                        {
+                            Console.WriteLine("Not valid number");
+                        }
+
+                        using (SampleAthenaClient athenaClient = new SampleAthenaClient("hassan", "s3://dj-rnc-feeds/hassan-log-sample/athena_output/", this.RegionEndpoint))
+                        {
+                            for (int n = 0; n < repetitions; n++)
+                            {
+                                foreach (string query in Queries)
+                                {
+                                    QueryStageStatistics queryStage = _stats.StartQueryStage(query);
+
+                                    report = athenaClient.ExecuteQuery(query, ref queryStage);
+
+                                    _stats.StopCurrentStage(report);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case ContextOperation.PushES:
+                    esClient = new SampleElasticsearchClient(this.ElasticsearchEndpoint, this.RegionEndpoint);
+
+                    Console.WriteLine($"Sample AWS Elasticsearch - Create Index to {this.ElasticsearchEndpoint}");
+
+                    int numOfDocs;
+                    while(!CaptureESParams(out numOfDocs))
+                    {
+                        Console.WriteLine("Not valid number");
+                    }
+
+                    _stats.StartStage("ES Indexing", $"Indexing {numOfDocs} documents");
+
+                    esClient.PushLogs(numOfDocs);
+
+                    _stats.StopCurrentStage();
+
+                    break;
+                case ContextOperation.QueryES:
+                    esClient = new SampleElasticsearchClient(this.ElasticsearchEndpoint, this.RegionEndpoint);
+
+                    Console.WriteLine($"Sample AWS Elasticsearch - Search on {this.ElasticsearchEndpoint}");
+
+                    while (!CaptureQueryParams(out repetitions))
+                    {
+                        Console.WriteLine("Not valid number");
+                    }
+
+                    for (int n = 0; n < repetitions; n++)
+                    {
+                        var stage = _stats.StartQueryStage("MatchAll()");
+
+                        report = esClient.QueryMatchAll(stage);
 
                         _stats.StopCurrentStage(report);
                     }
-                }
+
+                    break;
+                default:
+                    break;
             }
+
+            ClearConsoleLine();
 
             _stats.PrintStattistics();
 
@@ -83,7 +147,22 @@ namespace SampleLoggingApp
             Console.ReadKey();
         }
 
-        public static bool CaptureParams(out int numOfFiles, out int numOfRecords)
+        public static bool CaptureESParams(out int numOfRecords)
+        {
+            numOfRecords = 0;
+
+            Console.WriteLine("Enter the number of records:");
+            var numOfRecInput = Console.ReadLine();
+
+            if (!int.TryParse(numOfRecInput, out numOfRecords))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool CaptureS3Params(out int numOfFiles, out int numOfRecords)
         {
             numOfRecords = numOfFiles = -1;
 
@@ -94,11 +173,25 @@ namespace SampleLoggingApp
 
             if (!int.TryParse(numOfFilesInput, out numOfFiles))
             {
-                Console.WriteLine("Not valid number");
                 return false;
             }
 
             if (!int.TryParse(numOfRecInput, out numOfRecords))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool CaptureQueryParams(out int n)
+        {
+            n = MAX_QUERY_REPETITIONS;
+
+            Console.WriteLine("Enter te number of times the Query Set will be executed:");
+            var numOfFilesInput = Console.ReadLine();
+
+            if (!int.TryParse(numOfFilesInput, out n))
             {
                 Console.WriteLine("Not valid number");
                 return false;

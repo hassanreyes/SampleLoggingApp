@@ -3,7 +3,7 @@
 .vscode/
 [Oo]bj/
 
-.userprefs
+*.userprefs
 appsettings.Development.json
 appsettings.json
 

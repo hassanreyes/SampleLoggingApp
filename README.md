@@ -1,7 +1,8 @@
 # Sample Logging Application (POC)
 
-Console tool wich interact with Amazon S3, Amazon Athena and Elasticsearch in order to get metrics about running time, sacanned memory and 
-query execution.
+Console tool wich interact with Amazon S3, Amazon Athena and Elasticsearch in order to get metrics about running time, sacanned memory and query execution.
+
+Use a set of 10 LogEntry logs to feed a S3 bucket or Elasticsearch instance. It also allow to query the pushed records from S3 using Athena or from Elasticsearch.
 
 ## Getting Started
 
@@ -38,10 +39,22 @@ Be sure to have a proper appsettings.json file configured with the following fie
 
   *ElsticsearchEndpoint*: The endpoint address of the Elasticsearch instance in AWS.
   
+**Constrains**
+
+  The queries used agains the Athena query engine are hardcoded in the Program.cs file. It is recommended to use only one query per application execution.
+  
+  The maximum number that a Athena query is repeated is MAX_QUERY_REPETITIONS (10 by default).
+  
+  The maximum number of fetched records per Athena query execution is MAX_FETCHED_RECORDS (10000).
+  
+  The maximum number of records to be push per Bulk request in Elasticsearch is MAX_DOCS_PER_REQUEST (50000).
+  
+  > Every call to S3, Athena and Elasticsearch is performed in a Sync way although they are Async.
+  
 ### Prerequisites
 
 1. AWS account.
-2. AWS ~/.aws/credentials file since the application uses the default role.
+2. AWS ~/.aws/credentials file since the application use the default role.
 3. S3 Bucket with read, write rights from internet assigned to the user/role.
 4. Create the following path inside your S3 bucket: <BUCKET_NAME>/<BUCKET_PATH>/<FORMAT> were the format must be parquet or avro.
 5. Athena database with the following table structure:
@@ -67,7 +80,7 @@ OUTPUTFORMAT
   ```
   > The table name must match with the Format value in the appsettings.json.
    
-6. Elasticsearch isntance running with a valid endpoint.
+6. Elasticsearch instance running with a valid endpoint.
 7. No schema need to be defined in Elasticsearch. The application creates the required index with the name: logs
 
 > **Check for permissions in order to be able to connect from internet and allow Athena to read/write from/to S3.**
@@ -96,13 +109,19 @@ The application will ask you for the number of times the Query Set will be execu
 
 Execute at least one query: SELECT * FROM <FORMAT> 
 
-The application retrieves only the first 10,000 records in order to get an statistic meature.
+The application retrieves only the first MAX_FETCHED_RECORDS records in order to get statistics.
 
 #### \[2] Push to Amazon Elasticsearch
 
+The application will ask you for the number of documents to be indexed. Even when the maximum number per Bulck call is MAX_DOCS_PER_REQUEST, the application will let you specify a biger number since it will split the total amount of documents into bulcks of MAX_DOCS_PER_REQUEST.
+
 #### \[3] Query Amazon Elasticsearch
 
+The application will ask you for the number of times the MatchAll query will be executed.
+
 #### Application Report
+
+After the application has performed the selected operation, it will show a report of the elapsed time. An special report is throwout for Athena and Elasticsearch query execution. Since each query is executed the given number of times it will show a report with the mean time of: Query Execution Time, Data Fetching Time, Engine Execution Time and Data Scanned.
 
 ## License
 

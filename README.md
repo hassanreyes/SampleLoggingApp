@@ -123,6 +123,14 @@ The application will ask you for the number of times the MatchAll query will be 
 
 After the application has performed the selected operation, it will show a report of the elapsed time. An special report is throwout for Athena and Elasticsearch query execution. Since each query is executed the given number of times it will show a report with the mean time of: Query Execution Time, Data Fetching Time, Engine Execution Time and Data Scanned.
 
+### TODO
+
+1. Create a Terraform/CloudFormation script to create all needed AWS resources.
+
+2. Go deep in performance statistics. p.e. StdDev.
+
+3. Let user define (perhaps by configuration) the query or queries to be executed.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
